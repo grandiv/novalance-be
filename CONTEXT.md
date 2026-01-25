@@ -36,3 +36,53 @@ Additional flow
 
 1. How PO set dan nambah deposit untuk KPI selanjutnya
 2. Onchain portofolio PO dan FL dari history tiap kali withdraw (ponder) FD
+
+Wait, for your context, do we need to adjust BE job (me)? here's the SC developer job:
+
+- Mock IDRX
+- Vault
+  -- 90:10 split
+  -- LP Integration
+  -- Fixed Milestone steps & checkpoint termin deadline & distribution
+- Freelance Request Withdrawal
+  -- Multi-sig Freelancer + Project Owner
+  -- Yield distribution (+/- 40% to FL, 40% to PO, 20% to DW3)
+  -- Termin count, price distribution set by PO
+  -- Kalau rugi => project berhasil = 100% freelancer, project cancel = 100% PO
+- Submission (DW3)
+  -- Dev Late: Penalty set by Project Owner (-% / day) until 0
+  -- PO Late response: X days late auto allow withdraw in termin
+- Cancel project (10% LP + 90% vault)
+  -- 90% refund from Vault
+  -- 10% LP whatever happens goes to us
+  -- Cancel after termin, yg udh termin masuk dev, sisanya bisa ditarik (10% locked udah di kita)
+
+Here's the FE job:
+
+- Flow PO
+  -- Login n Wallet connect
+  -- Post jobs
+  --- Set Job Desc
+  --- Set Timeline
+  --- Set Termin
+  --- Select FL
+  -- Monitor progress
+  --- Cek progress
+  --- ACC/Cancel KPI
+  -- Profile
+  --- Update Offchain data
+  --- Shown onchain data
+- Flow FL
+  -- Login n Wallet connect
+  -- Apply job
+  --- Search job
+  --- Check requirement and apply
+  -- Profile
+  --- Update Offchain data
+  --- Shown onchain data
+
+curl -X POST http://localhost:3000/api/auth/wallet/nonce -H "Content-Type: application/json" -d "{\"address\":\"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\"}"
+
+Invoke-WebRequest -Uri "http://localhost:3000/api/auth/wallet/nonce" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"address":"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"}'
+
+curl.exe -X POST http://localhost:3000/api/auth/wallet/nonce -H "Content-Type: application/json" -d "{\"address\":\"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\"}"
