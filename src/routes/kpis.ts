@@ -5,7 +5,7 @@ import { db } from '../db';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
-import { submitKpiSchema, reviewKpiSchema } from '../lib/validations/kpi';
+import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema } from '../lib/validations/kpi';
 
 const kpisRoute = new Hono();
 
@@ -215,6 +215,159 @@ kpisRoute.get('/pending-reviews', async (c) => {
   });
 
   return c.json({ kpis: submittedKpis });
+});
+
+// Record KPI deposit to vault (SC event callback)
+kpisRoute.post('/:id/record-deposit', zValidator('json', recordDepositSchema), async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const kpiId = c.req.param('id');
+  const body = c.req.valid('json');
+
+  const kpi = await db.query.kpis.findFirst({
+    where: eq(kpis.id, kpiId),
+    with: {
+      projectRole: {
+        with: {
+          project: true,
+        },
+      },
+    },
+  });
+
+  if (!kpi) {
+    return c.json({ error: 'KPI not found' }, 404);
+  }
+
+  // Only project owner can record deposits
+  if (kpi.projectRole.project.ownerAddress !== address) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  const updated = await db.update(kpis)
+    .set({
+      depositTxHash: body.txHash,
+      vaultBalanceAtStart: body.vaultBalance,
+      updatedAt: new Date(),
+    })
+    .where(eq(kpis.id, kpiId))
+    .returning();
+
+  return c.json({ kpi: updated[0] });
+});
+
+// Record KPI payout from vault (SC event callback)
+kpisRoute.post('/:id/record-payout', zValidator('json', recordPayoutSchema), async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const kpiId = c.req.param('id');
+  const body = c.req.valid('json');
+
+  const kpi = await db.query.kpis.findFirst({
+    where: eq(kpis.id, kpiId),
+    with: {
+      projectRole: {
+        with: {
+          project: true,
+        },
+      },
+    },
+  });
+
+  if (!kpi) {
+    return c.json({ error: 'KPI not found' }, 404);
+  }
+
+  // Only project owner can record payouts
+  if (kpi.projectRole.project.ownerAddress !== address) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  const updated = await db.update(kpis)
+    .set({
+      status: 'paid',
+      payoutTxHash: body.txHash,
+      vaultBalanceAtEnd: body.vaultBalance,
+      yieldEarned: body.yieldEarned,
+      penaltyAmount: body.penaltyAmount,
+      updatedAt: new Date(),
+    })
+    .where(eq(kpis.id, kpiId))
+    .returning();
+
+  return c.json({ kpi: updated[0] });
+});
+
+// Get KPI yield/penalty breakdown
+kpisRoute.get('/:id/breakdown', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const kpiId = c.req.param('id');
+
+  const kpi = await db.query.kpis.findFirst({
+    where: eq(kpis.id, kpiId),
+    with: {
+      assignment: true,
+      projectRole: {
+        with: {
+          project: true,
+        },
+      },
+    },
+  });
+
+  if (!kpi) {
+    return c.json({ error: 'KPI not found' }, 404);
+  }
+
+  // Only project owner or assigned freelancer can view
+  const isOwner = kpi.projectRole.project.ownerAddress === address;
+  const isFreelancer = kpi.assignment?.freelancerAddress === address;
+
+  if (!isOwner && !isFreelancer) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  // Calculate yield/penalty breakdown
+  const baseAmount = BigInt(kpi.amount);
+  const yieldEarned = BigInt(kpi.yieldEarned || '0');
+  const penaltyAmount = BigInt(kpi.penaltyAmount || '0');
+
+  // Distribution: 40% FL, 40% PO, 20% AV (from CONTEXT.md)
+  const freelancerYield = yieldEarned * 40n / 100n;
+  const ownerYield = yieldEarned * 40n / 100n;
+  const devYield = yieldEarned * 20n / 100n;
+
+  const freelancerTotal = baseAmount + freelancerYield - penaltyAmount;
+  const ownerTotal = ownerYield;
+  const devTotal = devYield;
+
+  return c.json({
+    kpi: {
+      id: kpi.id,
+      kpiNumber: kpi.kpiNumber,
+      description: kpi.description,
+      status: kpi.status,
+    },
+    amounts: {
+      baseAmount: baseAmount.toString(),
+      yieldEarned: yieldEarned.toString(),
+      penaltyAmount: penaltyAmount.toString(),
+    },
+    distribution: {
+      freelancer: freelancerTotal.toString(),
+      projectOwner: ownerTotal.toString(),
+      devWallet: devTotal.toString(),
+    },
+    transactions: {
+      depositTxHash: kpi.depositTxHash,
+      payoutTxHash: kpi.payoutTxHash,
+    },
+    vaultBalances: {
+      atStart: kpi.vaultBalanceAtStart,
+      atEnd: kpi.vaultBalanceAtEnd,
+    },
+  });
 });
 
 export { kpisRoute as kpisRouter };

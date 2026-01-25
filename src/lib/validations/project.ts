@@ -13,6 +13,13 @@ export const updateProjectSchema = z.object({
   timelineStart: z.string().datetime().optional(),
   timelineEnd: z.string().datetime().optional(),
   status: z.enum(['draft', 'open', 'in_progress', 'completed', 'cancelled']).optional(),
+  vaultAddress: z.string().startsWith('0x').optional(), // Link vault contract
+  poResponseDeadline: z.string().datetime().optional(), // Auto-withdrawal deadline for PO response
+});
+
+// New: Link vault to project after deployment
+export const linkVaultSchema = z.object({
+  vaultAddress: z.string().startsWith('0x').min(42),
 });
 
 export const createRoleSchema = z.object({

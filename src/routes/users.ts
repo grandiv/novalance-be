@@ -152,4 +152,72 @@ usersRoute.get('/me/portfolio', async (c) => {
   });
 });
 
+// Get on-chain portfolio (withdrawal history with transaction hashes)
+usersRoute.get('/me/onchain-portfolio', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+
+  const paidKpis = await db.query.kpis.findMany({
+    where: eq(kpis.status, 'paid'),
+    with: {
+      assignment: {
+        with: {
+          projectRole: {
+            with: {
+              project: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Filter by user's address
+  const userPaidKpis = paidKpis.filter(
+    kpi => kpi.assignment?.freelancerAddress === address
+  );
+
+  // Build on-chain portfolio
+  const withdrawals = userPaidKpis.map(kpi => {
+    const baseAmount = BigInt(kpi.amount);
+    const yieldEarned = BigInt(kpi.yieldEarned || '0');
+    const penaltyAmount = BigInt(kpi.penaltyAmount || '0');
+    const freelancerYield = yieldEarned * 40n / 100n;
+    const totalReceived = baseAmount + freelancerYield - penaltyAmount;
+
+    return {
+      txHash: kpi.payoutTxHash,
+      timestamp: kpi.updatedAt,
+      projectId: kpi.assignment?.projectRole?.project?.id,
+      projectTitle: kpi.assignment?.projectRole?.project?.title,
+      vaultAddress: kpi.assignment?.projectRole?.project?.vaultAddress,
+      role: kpi.assignment?.projectRole?.name,
+      kpiNumber: kpi.kpiNumber,
+      amounts: {
+        base: baseAmount.toString(),
+        yield: freelancerYield.toString(),
+        penalty: penaltyAmount.toString(),
+        total: totalReceived.toString(),
+      },
+    };
+  });
+
+  // Calculate totals
+  const totalBase = withdrawals.reduce((sum, w) => sum + BigInt(w.amounts.base), 0n);
+  const totalYield = withdrawals.reduce((sum, w) => sum + BigInt(w.amounts.yield), 0n);
+  const totalPenalty = withdrawals.reduce((sum, w) => sum + BigInt(w.amounts.penalty), 0n);
+  const totalReceived = withdrawals.reduce((sum, w) => sum + BigInt(w.amounts.total), 0n);
+
+  return c.json({
+    stats: {
+      totalWithdrawals: withdrawals.length,
+      totalBase: totalBase.toString(),
+      totalYield: totalYield.toString(),
+      totalPenalty: totalPenalty.toString(),
+      totalReceived: totalReceived.toString(),
+    },
+    withdrawals,
+  });
+});
+
 export { usersRoute as usersRouter };

@@ -6,7 +6,7 @@ import { users, projects, projectRoles, applications, assignments, kpis } from '
 import { eq, and, desc, like, or, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
 import { nanoid } from 'nanoid';
-import { createProjectSchema, updateProjectSchema, createRoleSchema, updateRoleSchema, createKpiSchema } from '../lib/validations/project';
+import { createProjectSchema, updateProjectSchema, createRoleSchema, updateRoleSchema, createKpiSchema, linkVaultSchema } from '../lib/validations/project';
 
 const projectsRoute = new Hono();
 
@@ -629,6 +629,73 @@ projectsRoute.get('/:id/cancellation-status', async (c) => {
     status: project.status,
     isCancelled: project.status === 'cancelled',
   });
+});
+
+// Link vault contract to project (after SC deployment)
+projectsRoute.post('/:id/link-vault', zValidator('json', linkVaultSchema), async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const projectId = c.req.param('id');
+  const body = c.req.valid('json');
+
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.id, projectId),
+  });
+
+  if (!project) {
+    return c.json({ error: 'Project not found' }, 404);
+  }
+
+  if (project.ownerAddress !== address) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  const updated = await db.update(projects)
+    .set({
+      vaultAddress: body.vaultAddress,
+      updatedAt: new Date(),
+    })
+    .where(eq(projects.id, projectId))
+    .returning();
+
+  return c.json({ project: updated[0] });
+});
+
+// Record deposit to vault (called by SC event listener)
+projectsRoute.post('/:id/deposit', zValidator('json', z.object({
+  amount: z.string(),
+  txHash: z.string().min(10),
+})), async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const projectId = c.req.param('id');
+  const body = c.req.valid('json');
+
+  const project = await db.query.projects.findFirst({
+    where: eq(projects.id, projectId),
+  });
+
+  if (!project) {
+    return c.json({ error: 'Project not found' }, 404);
+  }
+
+  if (project.ownerAddress !== address) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  // Update total deposited
+  const currentTotal = BigInt(project.totalDeposited || '0');
+  const newTotal = currentTotal + BigInt(body.amount);
+
+  const updated = await db.update(projects)
+    .set({
+      totalDeposited: newTotal.toString(),
+      updatedAt: new Date(),
+    })
+    .where(eq(projects.id, projectId))
+    .returning();
+
+  return c.json({ project: updated[0] });
 });
 
 export { projectsRoute as projectsRouter };

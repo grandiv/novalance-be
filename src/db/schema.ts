@@ -7,7 +7,7 @@ export type ProjectStatus = 'draft' | 'open' | 'in_progress' | 'completed' | 'ca
 export type RoleStatus = 'open' | 'assigned' | 'completed' | 'cancelled';
 export type ApplicationStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
 export type AssignmentStatus = 'active' | 'completed' | 'cancelled';
-export type KpiStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'disputed';
+export type KpiStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'disputed' | 'paid' | 'cancelled';
 export type TransactionType = 'deposit' | 'payment' | 'refund' | 'penalty';
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
 
@@ -33,6 +33,8 @@ export const projects = sqliteTable('projects', {
   timelineEnd: integer('timeline_end', { mode: 'timestamp' }).notNull(),
   status: text('status', { mode: 'plaintext', enum: ['draft', 'open', 'in_progress', 'completed', 'cancelled'] }).notNull().$type<ProjectStatus>().default('draft'),
   vaultAddress: text('vault_address'),
+  totalDeposited: text('total_deposited').default('0'), // Total IDRX deposited to vault
+  poResponseDeadline: integer('po_response_deadline', { mode: 'timestamp' }), // Auto-withdrawal deadline for PO response
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -77,13 +79,19 @@ export const kpis = sqliteTable('kpis', {
   description: text('description').notNull(),
   deadline: integer('deadline', { mode: 'timestamp' }).notNull(),
   amount: text('amount').notNull(), // Stored as string to handle big numbers
-  status: text('status', { mode: 'plaintext', enum: ['pending', 'submitted', 'approved', 'rejected', 'disputed'] }).notNull().$type<KpiStatus>().default('pending'),
+  status: text('status', { mode: 'plaintext', enum: ['pending', 'submitted', 'approved', 'rejected', 'disputed', 'paid', 'cancelled'] }).notNull().$type<KpiStatus>().default('pending'),
   submittedAt: integer('submitted_at', { mode: 'timestamp' }),
   reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
   submissionData: text('submission_data'), // JSON string
   reviewComment: text('review_comment'),
-  penaltyAmount: text('penalty_amount'), // Stored as string to handle big numbers
+  penaltyAmount: text('penalty_amount').default('0'), // Stored as string, calculated by SC
+  depositTxHash: text('deposit_tx_hash'), // Transaction hash when deposited to vault
+  payoutTxHash: text('payout_tx_hash'), // Transaction hash when paid out
+  vaultBalanceAtStart: text('vault_balance_at_start'), // Vault balance when KPI started (for yield calculation)
+  vaultBalanceAtEnd: text('vault_balance_at_end'), // Vault balance when KPI completed (for yield calculation)
+  yieldEarned: text('yield_earned').default('0'), // LP yield earned (from SC)
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
 // Transactions table
