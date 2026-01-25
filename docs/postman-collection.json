@@ -1,0 +1,568 @@
+{
+  "info": {
+    "name": "Novalance Backend API",
+    "description": "Web3 Freelancer Marketplace Backend for Base Indonesia Hackathon",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token obtained from /api/auth/wallet/verify"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get Nonce for Wallet Signature",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/wallet/nonce",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "wallet", "nonce"]
+            }
+          }
+        },
+        {
+          "name": "Verify Signature & Get Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\",\n  \"signature\": \"0x...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/wallet/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "wallet", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List All Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects?status=open&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"]
+            }
+          }
+        },
+        {
+          "name": "Get Project Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Build DEX Frontend\",\n  \"description\": \"Need a frontend developer to build a swap interface\",\n  \"timelineStart\": \"2025-02-01T00:00:00Z\",\n  \"timelineEnd\": \"2025-04-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"]
+            }
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"open\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Add Role to Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Frontend Developer\",\n  \"description\": \"Build React UI components\",\n  \"kpiCount\": 10,\n  \"paymentPerKpi\": \"2000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id", "roles"]
+            }
+          }
+        },
+        {
+          "name": "Create KPIs for Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kpis\": [\n    {\"kpiNumber\": 1, \"description\": \"Design mockups\", \"deadline\": \"2025-02-15T00:00:00Z\"},\n    {\"kpiNumber\": 2, \"description\": \"Setup project\", \"deadline\": \"2025-02-20T00:00:00Z\"}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id/roles/:roleId/kpis",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id", "roles", ":roleId", "kpis"]
+            }
+          }
+        },
+        {
+          "name": "Get Project Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id", "progress"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Submit Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"I have 3 years of experience building React applications...\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/applications?roleId=role_id_here",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications"]
+            }
+          }
+        },
+        {
+          "name": "Get Applicants for Role",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applications/role/:roleId",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "role", ":roleId"]
+            }
+          }
+        },
+        {
+          "name": "Accept Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applications/:id/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", ":id", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Reject Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applications/:id/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", ":id", "reject"]
+            }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applications/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "my"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"githubUrl\": \"https://github.com/username\",\n  \"linkedinUrl\": \"https://linkedin.com/in/username\",\n  \"bio\": \"Full-stack web3 developer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/:address",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":address"]
+            }
+          }
+        },
+        {
+          "name": "Get My Assignments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "assignments"]
+            }
+          }
+        },
+        {
+          "name": "Get My Portfolio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "portfolio"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "KPIs",
+      "item": [
+        {
+          "name": "Submit KPI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"submissionData\": \"Link to PR: https://github.com/...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kpis/:id/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["kpis", ":id", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Approve KPI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Great work!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kpis/:id/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["kpis", ":id", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Reject KPI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Please fix these issues: ...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kpis/:id/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["kpis", ":id", "reject"]
+            }
+          }
+        },
+        {
+          "name": "Get My Pending KPIs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kpis/my/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["kpis", "my", "pending"]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Reviews (PO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kpis/pending-reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["kpis", "pending-reviews"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Smart Contracts",
+      "item": [
+        {
+          "name": "Get Vault Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contracts/vault/:address/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["contracts", "vault", ":address", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Get KPI Status from Vault",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contracts/vault/:address/kpi/:index",
+              "host": ["{{baseUrl}}"],
+              "path": ["contracts", "vault", ":address", "kpi", ":index"]
+            }
+          }
+        },
+        {
+          "name": "Get Vault Project Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contracts/vault/:address/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["contracts", "vault", ":address", "info"]
+            }
+          }
+        },
+        {
+          "name": "Get Deposit Calldata",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vaultAddress\": \"0x...\",\n  \"amount\": \"1000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contracts/calldata/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["contracts", "calldata", "deposit"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
