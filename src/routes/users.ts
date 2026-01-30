@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../db';
 import { users, projects, applications, assignments, kpis } from '../db/schema';
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, desc, count, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
 
 const usersRoute = new Hono();
@@ -217,6 +217,46 @@ usersRoute.get('/me/onchain-portfolio', async (c) => {
       totalReceived: totalReceived.toString(),
     },
     withdrawals,
+  });
+});
+
+// Get FL available balance (pending payouts)
+usersRoute.get('/me/balance', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+
+  // Get all assignments for this freelancer
+  const userAssignments = await db.query.assignments.findMany({
+    where: eq(assignments.freelancerAddress, address),
+    columns: { id: true },
+  });
+
+  const assignmentIds = userAssignments.map(a => a.id);
+
+  if (assignmentIds.length === 0) {
+    return c.json({
+      availableBalance: '0',
+      pendingKpis: 0,
+      approvedKpis: 0,
+      totalEarned: '0',
+    });
+  }
+
+  // Get KPIs for these assignments - need to handle multiple assignments
+  const allUserKpis = await db.query.kpis.findMany({
+    where: assignmentIds.length > 0 ? inArray(kpis.assignmentId, assignmentIds) : undefined,
+  });
+
+  // Calculate totals
+  const approvedKpis = allUserKpis.filter(k => k.status === 'approved' || k.status === 'paid');
+  const pendingKpis = allUserKpis.filter(k => k.status === 'submitted');
+  const totalEarned = approvedKpis.reduce((sum, k) => sum + BigInt(k.amount), 0n);
+
+  return c.json({
+    availableBalance: totalEarned.toString(),
+    pendingKpis: pendingKpis.length,
+    approvedKpis: approvedKpis.length,
+    totalEarned: totalEarned.toString(),
   });
 });
 
