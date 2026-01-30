@@ -150,6 +150,49 @@ kpisRoute.post('/:id/reject', zValidator('json', z.object({
   return c.json({ kpi: updated[0] });
 });
 
+// Confirm KPI (freelancer only - multi-sig step after PO approval)
+kpisRoute.post('/:id/confirm', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const kpiId = c.req.param('id');
+
+  const kpi = await db.query.kpis.findFirst({
+    where: eq(kpis.id, kpiId),
+    with: {
+      assignment: true,
+      projectRole: {
+        with: {
+          project: true,
+        },
+      },
+    },
+  });
+
+  if (!kpi || !kpi.assignment) {
+    return c.json({ error: 'KPI not found or not assigned' }, 404);
+  }
+
+  // Only assigned freelancer can confirm
+  if (kpi.assignment.freelancerAddress !== address) {
+    return c.json({ error: 'Not authorized' }, 403);
+  }
+
+  // Can only confirm approved KPIs (multi-sig flow)
+  if (kpi.status !== 'approved') {
+    return c.json({ error: 'KPI must be approved by PO first' }, 400);
+  }
+
+  const updated = await db.update(kpis)
+    .set({
+      status: 'paid',
+      updatedAt: new Date(),
+    })
+    .where(eq(kpis.id, kpiId))
+    .returning();
+
+  return c.json({ kpi: updated[0] });
+});
+
 // Get my pending KPIs (freelancer view)
 kpisRoute.get('/my/pending', async (c) => {
   const auth = c.get('auth');
