@@ -320,4 +320,71 @@ usersRoute.get('/me/project-balances', async (c) => {
   });
 });
 
+// Get earnings summary (with optional date range)
+usersRoute.get('/me/earnings', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+  const from = c.req.query('from');
+  const to = c.req.query('to');
+
+  // Get all paid KPIs for this freelancer
+  const allPaidKpis = await db.query.kpis.findMany({
+    where: eq(kpis.status, 'paid'),
+    with: {
+      assignment: {
+        with: {
+          projectRole: {
+            with: {
+              project: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Filter by user's address
+  const userPaidKpis = allPaidKpis.filter(
+    kpi => kpi.assignment?.freelancerAddress === address
+  );
+
+  // Apply date filters if provided
+  let filteredKpis = userPaidKpis;
+  if (from) {
+    const fromDate = new Date(from);
+    filteredKpis = filteredKpis.filter(k => (k.updatedAt || new Date()) >= fromDate);
+  }
+  if (to) {
+    const toDate = new Date(to);
+    filteredKpis = filteredKpis.filter(k => (k.updatedAt || new Date()) <= toDate);
+  }
+
+  // Calculate earnings
+  const totalBase = filteredKpis.reduce((sum, k) => sum + BigInt(k.amount), 0n);
+  const totalYield = filteredKpis.reduce((sum, k) => sum + BigInt(k.yieldEarned || '0'), 0n) * 40n / 100n;
+  const totalPenalty = filteredKpis.reduce((sum, k) => sum + BigInt(k.penaltyAmount || '0'), 0n);
+  const totalReceived = totalBase + totalYield - totalPenalty;
+
+  return c.json({
+    summary: {
+      totalKpis: filteredKpis.length,
+      totalBase: totalBase.toString(),
+      totalYield: totalYield.toString(),
+      totalPenalty: totalPenalty.toString(),
+      totalReceived: totalReceived.toString(),
+    },
+    earnings: filteredKpis.map(kpi => ({
+      projectId: kpi.assignment?.projectRole?.project?.id,
+      projectTitle: kpi.assignment?.projectRole?.project?.title,
+      role: kpi.assignment?.projectRole?.name,
+      kpiNumber: kpi.kpiNumber,
+      amount: kpi.amount,
+      yield: (BigInt(kpi.yieldEarned || '0') * 40n / 100n).toString(),
+      penalty: kpi.penaltyAmount || '0',
+      total: (BigInt(kpi.amount) + (BigInt(kpi.yieldEarned || '0') * 40n / 100n) - BigInt(kpi.penaltyAmount || '0')).toString(),
+      date: kpi.updatedAt,
+    })),
+  });
+});
+
 export { usersRoute as usersRouter };
