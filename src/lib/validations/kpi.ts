@@ -1,7 +1,15 @@
 import { z } from 'zod';
 
 export const submitKpiSchema = z.object({
-  submissionData: z.string().min(10).max(5000), // JSON string or description
+  // Legacy support: simple string submission
+  submissionData: z.string().min(10).max(5000).optional(),
+  // New structured deliverables
+  deliverables: z.object({
+    links: z.array(z.string().url()).min(1),
+    description: z.string().min(10).max(5000),
+  }).optional(),
+}).refine((data) => data.submissionData || data.deliverables, {
+  message: "Either submissionData or deliverables must be provided",
 });
 
 export const reviewKpiSchema = z.object({

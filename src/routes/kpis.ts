@@ -46,10 +46,22 @@ kpisRoute.post('/:id/submit', zValidator('json', submitKpiSchema), async (c) => 
     return c.json({ error: 'KPI already submitted' }, 400);
   }
 
+  // Handle both legacy submissionData and new structured deliverables
+  let submissionDataToStore: string;
+  if (body.deliverables) {
+    // If deliverables provided, JSON.stringify it for storage
+    submissionDataToStore = JSON.stringify(body.deliverables);
+  } else if (body.submissionData) {
+    // If submissionData provided, use it directly
+    submissionDataToStore = body.submissionData;
+  } else {
+    return c.json({ error: 'Either submissionData or deliverables must be provided' }, 400);
+  }
+
   const updated = await db.update(kpis)
     .set({
       status: 'submitted',
-      submissionData: body.submissionData,
+      submissionData: submissionDataToStore,
       submittedAt: new Date(),
     })
     .where(eq(kpis.id, kpiId))
