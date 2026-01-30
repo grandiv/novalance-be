@@ -24,3 +24,5 @@ export const recordPayoutSchema = z.object({
   yieldEarned: z.string().default('0'), // LP yield earned
   penaltyAmount: z.string().default('0'),
 });
+
+export const confirmKpiSchema = z.object({}).strict();

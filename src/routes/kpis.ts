@@ -5,7 +5,7 @@ import { db } from '../db';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
-import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema } from '../lib/validations/kpi';
+import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema, confirmKpiSchema } from '../lib/validations/kpi';
 
 const kpisRoute = new Hono();
 
@@ -151,7 +151,7 @@ kpisRoute.post('/:id/reject', zValidator('json', z.object({
 });
 
 // Confirm KPI (freelancer only - multi-sig step after PO approval)
-kpisRoute.post('/:id/confirm', async (c) => {
+kpisRoute.post('/:id/confirm', zValidator('json', confirmKpiSchema), async (c) => {
   const auth = c.get('auth');
   const address = auth.address;
   const kpiId = c.req.param('id');
@@ -181,6 +181,10 @@ kpisRoute.post('/:id/confirm', async (c) => {
   if (kpi.status !== 'approved') {
     return c.json({ error: 'KPI must be approved by PO first' }, 400);
   }
+
+  // TODO: Trigger smart contract multi-sig withdrawal
+  // This is where you'd call the SC to finalize the multi-sig withdrawal
+  // SC should: verify freelancer signature + PO approval, then release funds
 
   const updated = await db.update(kpis)
     .set({
