@@ -27,6 +27,7 @@ export const createRoleSchema = z.object({
   description: z.string().min(10).max(500),
   kpiCount: z.number().int().min(1).max(52), // Max 1 year of weekly KPIs
   paymentPerKpi: z.string().regex(/^\d+$/), // IDRX amount as string
+  skills: z.array(z.string()).optional(), // Array of skills: ["typescript", "react"]
 });
 
 export const updateRoleSchema = z.object({
@@ -34,6 +35,7 @@ export const updateRoleSchema = z.object({
   description: z.string().min(10).max(500).optional(),
   kpiCount: z.number().int().min(1).max(52).optional(),
   paymentPerKpi: z.string().regex(/^\d+$/).optional(),
+  skills: z.array(z.string()).optional(), // Array of skills
   status: z.enum(['open', 'assigned', 'completed', 'cancelled']).optional(),
 });
 

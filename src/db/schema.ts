@@ -47,6 +47,7 @@ export const projectRoles = sqliteTable('project_roles', {
   description: text('description').notNull(),
   kpiCount: integer('kpi_count').notNull(),
   paymentPerKpi: text('payment_per_kpi').notNull(), // Stored as string to handle big numbers
+  skills: text('skills').$type<string>(), // JSON array of skills: ["typescript", "react"]
   status: text('status', { mode: 'plaintext', enum: ['open', 'assigned', 'completed', 'cancelled'] }).notNull().$type<RoleStatus>().default('open'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });

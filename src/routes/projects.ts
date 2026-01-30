@@ -14,6 +14,7 @@ const projectsRoute = new Hono();
 projectsRoute.get('/', async (c) => {
   const search = c.req.query('search');
   const status = c.req.query('status');
+  const skills = c.req.query('skills');
   const limit = parseInt(c.req.query('limit') || '20');
   const offset = parseInt(c.req.query('offset') || '0');
 
@@ -48,7 +49,30 @@ projectsRoute.get('/', async (c) => {
     offset,
   });
 
-  return c.json({ projects: projectList });
+  // Filter by skills if provided (comma-separated list)
+  let filteredProjects = projectList;
+  if (skills) {
+    const skillList = skills.split(',').map(s => s.trim().toLowerCase());
+    filteredProjects = projectList.filter(project => {
+      // Check if any role has at least one matching skill
+      return project.roles.some(role => {
+        if (!role.skills) return false;
+        try {
+          const roleSkills = JSON.parse(role.skills) as string[];
+          // Check if any role skill matches any requested skill
+          return roleSkills.some(roleSkill =>
+            skillList.some(requestedSkill =>
+              roleSkill.toLowerCase().includes(requestedSkill)
+            )
+          );
+        } catch {
+          return false;
+        }
+      });
+    });
+  }
+
+  return c.json({ projects: filteredProjects });
 });
 
 projectsRoute.get('/:id', async (c) => {
@@ -212,6 +236,7 @@ projectsRoute.post('/:id/roles', zValidator('json', createRoleSchema), async (c)
     description: body.description,
     kpiCount: body.kpiCount,
     paymentPerKpi: body.paymentPerKpi,
+    skills: body.skills ? JSON.stringify(body.skills) : null,
     status: 'open',
   }).returning();
 
