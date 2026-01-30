@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../db';
-import { users, projects, applications, assignments, kpis } from '../db/schema';
+import { users, projects, applications, assignments, kpis, projectRoles } from '../db/schema';
 import { eq, desc, count, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
 
@@ -257,6 +257,66 @@ usersRoute.get('/me/balance', async (c) => {
     pendingKpis: pendingKpis.length,
     approvedKpis: approvedKpis.length,
     totalEarned: totalEarned.toString(),
+  });
+});
+
+// Get PO project balances (deposited vs spent)
+usersRoute.get('/me/project-balances', async (c) => {
+  const auth = c.get('auth');
+  const address = auth.address;
+
+  // Get all projects owned by this user
+  const myProjects = await db.query.projects.findMany({
+    where: eq(projects.ownerAddress, address),
+    with: {
+      roles: {
+        with: {
+          kpis: true,
+        },
+      },
+    },
+  });
+
+  const projectBalances = myProjects.map(project => {
+    const totalDeposited = BigInt(project.totalDeposited || '0');
+
+    // Calculate spent from paid KPIs
+    const paidKpis = project.roles.flatMap(r => r.kpis).filter(k => k.status === 'paid');
+    const totalSpent = paidKpis.reduce((sum, k) => sum + BigInt(k.amount), 0n);
+
+    // Calculate pending (approved but not yet paid)
+    const approvedKpis = project.roles.flatMap(r => r.kpis).filter(k => k.status === 'approved');
+    const totalPending = approvedKpis.reduce((sum, k) => sum + BigInt(k.amount), 0n);
+
+    const remaining = totalDeposited - totalSpent;
+
+    return {
+      projectId: project.id,
+      projectTitle: project.title,
+      vaultAddress: project.vaultAddress,
+      deposited: totalDeposited.toString(),
+      spent: totalSpent.toString(),
+      pending: totalPending.toString(),
+      remaining: remaining.toString(),
+    };
+  });
+
+  // Calculate totals across all projects
+  const totals = projectBalances.reduce((acc, pb) => ({
+    deposited: BigInt(acc.deposited) + BigInt(pb.deposited),
+    spent: BigInt(acc.spent) + BigInt(pb.spent),
+    pending: BigInt(acc.pending) + BigInt(pb.pending),
+    remaining: BigInt(acc.remaining) + BigInt(pb.remaining),
+  }), { deposited: 0n, spent: 0n, pending: 0n, remaining: 0n });
+
+  return c.json({
+    projects: projectBalances,
+    totals: {
+      deposited: totals.deposited.toString(),
+      spent: totals.spent.toString(),
+      pending: totals.pending.toString(),
+      remaining: totals.remaining.toString(),
+    },
   });
 });
 
