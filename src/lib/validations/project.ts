@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const createProjectSchema = z.object({
+  id: z.string().optional(), // Allow specifying ID for on-chain sync
   title: z.string().min(3).max(100),
   description: z.string().min(10).max(2000),
   timelineStart: z.string().datetime(), // ISO 8601

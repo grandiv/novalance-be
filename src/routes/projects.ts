@@ -137,7 +137,9 @@ projectsRoute.post('/', zValidator('json', createProjectSchema), async (c) => {
   const address = auth.address;
   const body = c.req.valid('json');
 
-  const id = nanoid();
+  // Allow specifying an ID (for on-chain sync) or generate one
+  const id = body.id || nanoid();
+
   const newProject = await db.insert(projects).values({
     id,
     ownerAddress: address,
@@ -145,8 +147,10 @@ projectsRoute.post('/', zValidator('json', createProjectSchema), async (c) => {
     description: body.description,
     timelineStart: new Date(body.timelineStart),
     timelineEnd: new Date(body.timelineEnd),
-    status: 'draft',
+    status: 'open', // Created projects are open by default
   }).returning();
+
+  console.log('[Project Created] ID:', id, 'Owner:', address);
 
   return c.json({ project: newProject[0] }, 201);
 });
