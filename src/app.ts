@@ -213,12 +213,12 @@ app.get('/api/swagger.json', (c) => {
 });
 
 // API routes
-import { authRouter } from './routes/auth';
-import { usersRouter } from './routes/users';
-import { projectsRouter } from './routes/projects';
-import { applicationsRouter } from './routes/applications';
-import { kpisRouter } from './routes/kpis';
-import { contractsRouter } from './routes/contracts';
+import { authRouter } from './routes/auth.js';
+import { usersRouter } from './routes/users.js';
+import { projectsRouter } from './routes/projects.js';
+import { applicationsRouter } from './routes/applications.js';
+import { kpisRouter } from './routes/kpis.js';
+import { contractsRouter } from './routes/contracts.js';
 app.route('/api/auth', authRouter);
 app.route('/api/users', usersRouter);
 app.route('/api/projects', projectsRouter);
