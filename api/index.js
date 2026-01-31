@@ -1,30 +1,22 @@
-// Vercel serverless function handler for Hono
-import { handle } from '@hono/vercel';
-
-// Import the app without DB binding
-import app from '../dist/app.js';
-
-// Export the Vercel handler
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-// Wrap with error handling
-const handler = handle(app);
-
-export default async function(req, res) {
+// Simple test to verify Vercel is working
+export default async function handler(req, res) {
   try {
-    return await handler(req, res);
+    // Return a simple JSON response
+    res.status(200).json({
+      status: 'ok',
+      message: 'NovaLance API v1.0',
+      docs: '/api-docs',
+      timestamp: new Date().toISOString(),
+      env: {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
   } catch (error) {
-    console.error('Error in Vercel handler:', error);
-    if (!res.headersSent) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
-    }
+    console.error('Error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message
+    });
   }
 }
