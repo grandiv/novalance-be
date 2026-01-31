@@ -1,10 +1,15 @@
 import type { Config } from 'drizzle-kit';
+import { config } from 'dotenv';
+
+config({ path: '.env.local' });
 
 export default {
   schema: './src/db/schema.ts',
   out: './drizzle',
   dialect: 'sqlite',
+  driver: 'd1-http',
   dbCredentials: {
-    url: './novalance.db',
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+    databaseId: process.env.D1_DATABASE_ID!,
   },
 } satisfies Config;
