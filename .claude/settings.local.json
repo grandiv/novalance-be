@@ -7,7 +7,9 @@
       "Bash(npm run build:*)",
       "WebSearch",
       "WebFetch(domain:hono.dev)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(vercel:*)",
+      "Bash(node:*)"
     ]
   }
 }

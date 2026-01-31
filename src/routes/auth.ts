@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { db } from '../db';
+import { db } from '../db/index.js';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { generateNonce, createSignMessage, verifySignature } from '../lib/crypto';

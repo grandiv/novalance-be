@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { getDb } from './db';
+import { getDb } from './db/index.js';
 import app from './app';
 
 const db = getDb();

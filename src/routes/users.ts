@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { db } from '../db';
+import { db } from '../db/index.js';
 import { users, projects, applications, assignments, kpis, projectRoles } from '../db/schema';
 import { eq, desc, count, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
