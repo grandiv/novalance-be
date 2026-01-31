@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
+import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema.js';
 import { eq, and, inArray } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema, confirmKpiSchema } from '../lib/validations/kpi.js';
