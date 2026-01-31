@@ -1,8 +1,9 @@
-# Novalance Backend API
+# Novalance Backend APIs
 
 Web3 freelancer marketplace backend for Base Indonesia Hackathon.
 
 ## Tech Stack
+
 - **Runtime:** Node.js (with tsx for TypeScript execution)
 - **Framework:** Hono (ultra-fast, edge-compatible)
 - **Database:** better-sqlite3 + Drizzle ORM (SQLite with full TypeScript support)
@@ -10,6 +11,7 @@ Web3 freelancer marketplace backend for Base Indonesia Hackathon.
 - **Auth:** jose (JWT tokens)
 
 ## Features
+
 - 📝 **Wallet Signature Authentication** - Nonce-based SIWE pattern
 - 👥 **User Profiles** - GitHub, LinkedIn, bio management
 - 🚀 **Project Management** - Create, update, delete projects
@@ -77,21 +79,21 @@ See [`docs/API.md`](docs/API.md) for complete API reference.
 
 ### Quick API Reference
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/wallet/nonce` | POST | Get nonce for wallet signature |
-| `/api/auth/wallet/verify` | POST | Verify signature & get JWT |
-| `/api/users/me` | GET | Get current user profile |
-| `/api/users/:address` | GET | Get public user profile |
-| `/api/projects` | GET/POST | List/create projects |
-| `/api/projects/:id` | GET/PUT/DELETE | Project details/update/delete |
-| `/api/projects/:id/roles` | POST | Add role to project |
-| `/api/projects/:id/progress` | GET | Get project progress |
-| `/api/applications` | POST | Submit application |
-| `/api/applications/:id/accept` | POST | Accept application |
-| `/api/kpis/:id/submit` | POST | Submit KPI |
-| `/api/kpis/:id/approve` | POST | Approve KPI |
-| `/api/contracts/vault/:address/*` | GET | Vault contract queries |
+| Endpoint                          | Method         | Description                    |
+| --------------------------------- | -------------- | ------------------------------ |
+| `/api/auth/wallet/nonce`          | POST           | Get nonce for wallet signature |
+| `/api/auth/wallet/verify`         | POST           | Verify signature & get JWT     |
+| `/api/users/me`                   | GET            | Get current user profile       |
+| `/api/users/:address`             | GET            | Get public user profile        |
+| `/api/projects`                   | GET/POST       | List/create projects           |
+| `/api/projects/:id`               | GET/PUT/DELETE | Project details/update/delete  |
+| `/api/projects/:id/roles`         | POST           | Add role to project            |
+| `/api/projects/:id/progress`      | GET            | Get project progress           |
+| `/api/applications`               | POST           | Submit application             |
+| `/api/applications/:id/accept`    | POST           | Accept application             |
+| `/api/kpis/:id/submit`            | POST           | Submit KPI                     |
+| `/api/kpis/:id/approve`           | POST           | Approve KPI                    |
+| `/api/contracts/vault/:address/*` | GET            | Vault contract queries         |
 
 ## Database Schema
 
@@ -116,17 +118,20 @@ VAULT_IMPLEMENTATION_ADDRESS=
 ## For Frontend Team
 
 ### Base URL
+
 ```
 http://localhost:3000/api
 ```
 
 ### Authentication Flow
+
 1. `POST /api/auth/wallet/nonce` - Get nonce with `{ address }`
 2. User signs message with wallet
 3. `POST /api/auth/wallet/verify` - Verify with `{ address, signature }` → get token
 4. Include token in requests: `Authorization: Bearer <token>`
 
 ### Postman Collection
+
 Import [`docs/postman-collection.json`](docs/postman-collection.json) into Postman for testing all endpoints.
 
 ## For Smart Contract Team
@@ -136,6 +141,7 @@ Import [`docs/postman-collection.json`](docs/postman-collection.json) into Postm
 See [`src/lib/contracts/vault.ts`](src/lib/contracts/vault.ts) for the expected ABI.
 
 **Key Functions Needed:**
+
 - `getBalance()` - Get vault balance
 - `getKpiStatus(uint256 kpiIndex)` - Get KPI completion status
 - `getProjectInfo()` - Get project details
@@ -144,6 +150,7 @@ See [`src/lib/contracts/vault.ts`](src/lib/contracts/vault.ts) for the expected 
 - `cancelProject()` - Cancel project and handle refunds
 
 **Events to Emit:**
+
 - `Deposited(address caller, uint256 amount)` - When funds are deposited
 - `KpiApproved(uint256 kpiIndex, address freelancer, uint256 amount)` - When KPI is approved
 - `ProjectCancelled(address caller, uint256 refundAmount)` - When project is cancelled
