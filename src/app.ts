@@ -1,9 +1,10 @@
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { Hono } from 'hono';
+import type { Env } from './types';
 
-// Create Hono app instance
-const app = new Hono();
+// Create Hono app instance with Env bindings
+const app = new Hono<{ Bindings: Env }>();
 
 // CORS middleware - allow frontend origins
 app.use('/*', cors({
