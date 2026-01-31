@@ -9,7 +9,10 @@
       "WebFetch(domain:hono.dev)",
       "Bash(curl:*)",
       "Bash(vercel:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run test:e2e:*)"
     ]
   }
 }

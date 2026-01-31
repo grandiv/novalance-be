@@ -1,4 +1,6 @@
-import { verifyMessage, hashMessage } from 'viem';
+import { verifyMessage, hashMessage, recoverAddress } from 'viem';
+import { hashMessage as hashMessageViem } from 'viem';
+import { toHex } from 'viem';
 import { nanoid } from 'nanoid';
 
 const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
@@ -17,13 +19,24 @@ export async function verifySignature(
   signature: string
 ): Promise<boolean> {
   try {
-    const recovered = await verifyMessage({
-      address: address as `0x${string}`,
-      message,
+    console.log('[Signature Verification] Input:', {
+      address,
+      messageLength: message.length,
+      signature: signature.substring(0, 20) + '...',
+    });
+
+    const recovered = await recoverAddress({
+      hash: hashMessageViem(message),
       signature: signature as `0x${string}`,
     });
-    return (recovered as any)?.toLowerCase?.() === address.toLowerCase();
-  } catch {
+
+    console.log('[Signature Verification] Recovered address:', recovered);
+    console.log('[Signature Verification] Expected address:', address.toLowerCase());
+    console.log('[Signature Verification] Match:', recovered.toLowerCase() === address.toLowerCase());
+
+    return recovered.toLowerCase() === address.toLowerCase();
+  } catch (error) {
+    console.error('[Signature Verification] Error:', error);
     return false;
   }
 }
