@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": null,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "edge"
+  "builds": [
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/edge"
     }
-  }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
 }
