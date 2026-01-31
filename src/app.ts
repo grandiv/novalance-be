@@ -209,7 +209,7 @@ app.get('/api/swagger.json', (c) => {
         }
       }
     }
-  };
+  });
 });
 
 // API routes
