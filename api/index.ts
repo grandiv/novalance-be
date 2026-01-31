@@ -1,20 +1,16 @@
-import { Hono } from 'hono';
-import { getD1Db } from '../src/db';
+import { serve } from '@hono/node-server';
 import app from '../src/app';
-import type { Env } from '../src/types';
 
-// Vercel Edge Runtime entry point with D1 binding
-const serverless = new Hono<{ Bindings: Env }>();
+// Vercel Edge Function handler for Node.js runtime
+export const runtime = 'nodejs';
 
-// Bind D1 from environment to all requests
-serverless.use('/*', async (c, next) => {
-  const db = getD1Db(c.env.DB);
+// Bind local SQLite database for serverless
+import { getLocalDb } from '../src/db';
+const db = getLocalDb();
+
+app.use('/*', async (c, next) => {
   (c as any).set('db', db);
   await next();
 });
 
-// Proxy all routes to main app
-serverless.route('/', app);
-
-// Vercel Edge Runtime handler
-export default serverless;
+export default app;
