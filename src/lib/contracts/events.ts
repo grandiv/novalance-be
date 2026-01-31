@@ -63,4 +63,4 @@ export function stopAllListeners(): void {
 }
 
 // Re-export vault functions for convenience
-export * from './vault';
+export * from './vault.js';

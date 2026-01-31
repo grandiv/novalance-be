@@ -23,4 +23,4 @@ export function getDb() {
 export const db = getDb();
 
 // Export schema for use in other files
-export * from './schema';
+export * from './schema.js';
