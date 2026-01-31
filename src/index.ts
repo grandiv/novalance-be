@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { getLocalDb } from './db';
+import { getDb } from './db';
 import app from './app';
 
-const db = getLocalDb();
+const db = getDb();
 
 // Bind database to context
 app.use('/*', async (c, next) => {
