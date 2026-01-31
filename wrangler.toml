@@ -1,0 +1,8 @@
+name = "novalance-be"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "novalance-db"
+database_id = "c90ae954-4f2b-437a-b0f7-7d3f3b8b411b"
