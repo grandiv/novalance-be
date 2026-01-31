@@ -5,12 +5,42 @@ import { nanoid } from 'nanoid';
 
 const NONCE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
+export interface SignMessageResult {
+  nonce: string;
+  message: string;
+  timestamp: string;
+}
+
 export function generateNonce(): string {
   return nanoid(32);
 }
 
-export function createSignMessage(nonce: string, address: string): string {
-  return `Welcome to Novalance!\n\nClick to sign in and verify your wallet ownership.\n\nThis request will not trigger a blockchain transaction or cost any fees.\n\nWallet address:\n${address}\n\nNonce: ${nonce}\n\nTimestamp: ${Date.now()}`;
+export function createSignMessage(nonce: string, address: string): SignMessageResult {
+  const timestamp = Date.now().toString();
+  const message = `Welcome to Novalance!\n\nClick to sign in and verify your wallet ownership.\n\nThis request will not trigger a blockchain transaction or cost any fees.\n\nWallet address:\n${address}\n\nNonce: ${nonce}\n\nTimestamp: ${timestamp}`;
+
+  // Store nonce with timestamp (format: nonce:timestamp)
+  return {
+    nonce: `${nonce}:${timestamp}`,
+    message,
+    timestamp,
+  };
+}
+
+// Extract nonce and timestamp from stored nonce
+export function parseStoredNonce(storedNonce: string): { nonce: string; timestamp: string } {
+  const parts = storedNonce.split(':');
+  if (parts.length === 2) {
+    return { nonce: parts[0], timestamp: parts[1] };
+  }
+  // Legacy format - no timestamp
+  return { nonce: storedNonce, timestamp: Date.now().toString() };
+}
+
+// Recreate the message from stored nonce
+export function recreateMessage(nonce: string, address: string): string {
+  const { nonce: actualNonce, timestamp } = parseStoredNonce(nonce);
+  return `Welcome to Novalance!\n\nClick to sign in and verify your wallet ownership.\n\nThis request will not trigger a blockchain transaction or cost any fees.\n\nWallet address:\n${address}\n\nNonce: ${actualNonce}\n\nTimestamp: ${timestamp}`;
 }
 
 export async function verifySignature(
