@@ -31,7 +31,7 @@ export const projects = sqliteTable('projects', {
   description: text('description').notNull(),
   timelineStart: integer('timeline_start', { mode: 'timestamp' }).notNull(),
   timelineEnd: integer('timeline_end', { mode: 'timestamp' }).notNull(),
-  status: text('status', { mode: 'plaintext', enum: ['draft', 'open', 'in_progress', 'completed', 'cancelled'] }).notNull().$type<ProjectStatus>().default('draft'),
+  status: text('status', { mode: 'text', enum: ['draft', 'open', 'in_progress', 'completed', 'cancelled'] }).notNull().$type<ProjectStatus>().default('draft'),
   vaultAddress: text('vault_address'),
   totalDeposited: text('total_deposited').default('0'), // Total IDRX deposited to vault
   poResponseDeadline: integer('po_response_deadline', { mode: 'timestamp' }), // Auto-withdrawal deadline for PO response
@@ -48,7 +48,7 @@ export const projectRoles = sqliteTable('project_roles', {
   kpiCount: integer('kpi_count').notNull(),
   paymentPerKpi: text('payment_per_kpi').notNull(), // Stored as string to handle big numbers
   skills: text('skills').$type<string>(), // JSON array of skills: ["typescript", "react"]
-  status: text('status', { mode: 'plaintext', enum: ['open', 'assigned', 'completed', 'cancelled'] }).notNull().$type<RoleStatus>().default('open'),
+  status: text('status', { mode: 'text', enum: ['open', 'assigned', 'completed', 'cancelled'] }).notNull().$type<RoleStatus>().default('open'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
@@ -57,7 +57,7 @@ export const applications = sqliteTable('applications', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   projectRoleId: text('project_role_id').notNull().references(() => projectRoles.id, { onDelete: 'cascade' }),
   freelancerAddress: text('freelancer_address').notNull().references(() => users.address, { onDelete: 'cascade' }),
-  status: text('status', { mode: 'plaintext', enum: ['pending', 'accepted', 'rejected', 'withdrawn'] }).notNull().$type<ApplicationStatus>().default('pending'),
+  status: text('status', { mode: 'text', enum: ['pending', 'accepted', 'rejected', 'withdrawn'] }).notNull().$type<ApplicationStatus>().default('pending'),
   coverLetter: text('cover_letter'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -68,7 +68,7 @@ export const assignments = sqliteTable('assignments', {
   projectRoleId: text('project_role_id').notNull().references(() => projectRoles.id, { onDelete: 'cascade' }),
   freelancerAddress: text('freelancer_address').notNull().references(() => users.address, { onDelete: 'cascade' }),
   assignedAt: integer('assigned_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
-  status: text('status', { mode: 'plaintext', enum: ['active', 'completed', 'cancelled'] }).notNull().$type<AssignmentStatus>().default('active'),
+  status: text('status', { mode: 'text', enum: ['active', 'completed', 'cancelled'] }).notNull().$type<AssignmentStatus>().default('active'),
 });
 
 // KPIs table
@@ -80,7 +80,7 @@ export const kpis = sqliteTable('kpis', {
   description: text('description').notNull(),
   deadline: integer('deadline', { mode: 'timestamp' }).notNull(),
   amount: text('amount').notNull(), // Stored as string to handle big numbers
-  status: text('status', { mode: 'plaintext', enum: ['pending', 'submitted', 'approved', 'rejected', 'disputed', 'paid', 'cancelled'] }).notNull().$type<KpiStatus>().default('pending'),
+  status: text('status', { mode: 'text', enum: ['pending', 'submitted', 'approved', 'rejected', 'disputed', 'paid', 'cancelled'] }).notNull().$type<KpiStatus>().default('pending'),
   submittedAt: integer('submitted_at', { mode: 'timestamp' }),
   reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
   submissionData: text('submission_data'), // JSON string
@@ -98,13 +98,13 @@ export const kpis = sqliteTable('kpis', {
 // Transactions table
 export const transactions = sqliteTable('transactions', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  type: text('type', { mode: 'plaintext', enum: ['deposit', 'payment', 'refund', 'penalty'] }).notNull().$type<TransactionType>(),
+  type: text('type', { mode: 'text', enum: ['deposit', 'payment', 'refund', 'penalty'] }).notNull().$type<TransactionType>(),
   projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
   kpiId: text('kpi_id').references(() => kpis.id, { onDelete: 'set null' }),
   assignmentId: text('assignment_id').references(() => assignments.id, { onDelete: 'set null' }),
   txHash: text('tx_hash').notNull(),
   amount: text('amount').notNull(), // Stored as string to handle big numbers
-  status: text('status', { mode: 'plaintext', enum: ['pending', 'confirmed', 'failed'] }).notNull().$type<TransactionStatus>().default('pending'),
+  status: text('status', { mode: 'text', enum: ['pending', 'confirmed', 'failed'] }).notNull().$type<TransactionStatus>().default('pending'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   confirmedAt: integer('confirmed_at', { mode: 'timestamp' }),
 });

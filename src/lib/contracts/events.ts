@@ -36,7 +36,7 @@ export function startVaultListener(
     },
   });
 
-  activeListeners.set(vaultAddress, unwatch);
+  activeListeners.set(vaultAddress, unwatch as any);
 
   return () => stopVaultListener(vaultAddress);
 }

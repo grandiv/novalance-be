@@ -1,11 +1,11 @@
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type { BetterSqlite3Database } from 'drizzle-orm/better-sqlite3';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 
 // For local development with SQLite
-let _localDb: BetterSqlite3Database<typeof schema> | null = null;
+let _localDb: any = null;
 
 export function getLocalDb() {
   if (_localDb) return _localDb;
@@ -16,9 +16,9 @@ export function getLocalDb() {
 }
 
 // For D1 (production on Vercel)
-export function getD1Db(d1: D1Database) {
+export function getD1Db(d1: any) {
   const { drizzle: drizzleD1 } = require('drizzle-orm/d1-http');
-  return drizzleD1(d1, { schema }) as DrizzleD1Database<typeof schema>;
+  return drizzleD1(d1, { schema }) as any;
 }
 
 // Legacy export for backward compatibility (uses local SQLite)

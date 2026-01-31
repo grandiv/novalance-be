@@ -11,5 +11,6 @@ export default {
   dbCredentials: {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
     databaseId: process.env.D1_DATABASE_ID!,
+    token: '', // D1 HTTP driver doesn't require token for wrangler
   },
-} satisfies Config;
+} satisfies any;

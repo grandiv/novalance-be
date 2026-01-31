@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run db:generate:*)"
+      "Bash(npm run db:generate:*)",
+      "Bash(dir:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

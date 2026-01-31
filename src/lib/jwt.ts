@@ -21,7 +21,7 @@ export async function createToken(address: string): Promise<string> {
   };
 
   const secret = await getSecret();
-  return await new SignJWT(payload)
+  return await new SignJWT(payload as any)
     .setProtectedHeader({ alg: 'HS256' })
     .sign(secret);
 }

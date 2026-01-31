@@ -44,3 +44,7 @@ coverage
 # Temp
 tmp
 temp
+
+SELF_NOTE.md
+
+.vercel

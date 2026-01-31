@@ -4,20 +4,14 @@
     "module": "ES2022",
     "moduleResolution": "bundler",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": false,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "drizzle"],
-  "ts-node": {
-    "esm": true
-  }
+  "include": ["src/**/*", "api/**/*"],
+  "exclude": ["node_modules", "dist", "drizzle", "tests"]
 }

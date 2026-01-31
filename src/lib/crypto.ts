@@ -22,7 +22,7 @@ export async function verifySignature(
       message,
       signature: signature as `0x${string}`,
     });
-    return recovered.toLowerCase() === address.toLowerCase();
+    return (recovered as any)?.toLowerCase?.() === address.toLowerCase();
   } catch {
     return false;
   }

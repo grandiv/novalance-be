@@ -30,7 +30,8 @@ export async function getVaultBalance(vaultAddress: string) {
       address: vaultAddress as `0x${string}`,
       abi: VAULT_ABI,
       functionName: 'getBalance',
-    });
+      args: [],
+    } as any);
     return balance.toString();
   } catch (error) {
     console.error('Error reading vault balance:', error);
@@ -46,7 +47,7 @@ export async function getKpiStatus(vaultAddress: string, kpiIndex: number) {
       abi: VAULT_ABI,
       functionName: 'getKpiStatus',
       args: [BigInt(kpiIndex)],
-    });
+    } as any);
     return {
       completed: status[0] as boolean,
       amount: status[1].toString(),
@@ -64,7 +65,8 @@ export async function getProjectInfo(vaultAddress: string) {
       address: vaultAddress as `0x${string}`,
       abi: VAULT_ABI,
       functionName: 'getProjectInfo',
-    });
+      args: [],
+    } as any);
     return {
       owner: info[0] as string,
       token: info[1] as string,

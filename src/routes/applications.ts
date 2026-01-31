@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { db } from '../db';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth';
 import { nanoid } from 'nanoid';
 import { submitApplicationSchema } from '../lib/validations/application';
