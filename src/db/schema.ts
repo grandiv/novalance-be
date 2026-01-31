@@ -19,6 +19,8 @@ export const users = pgTable('users', {
   githubUrl: text('github_url'),
   linkedinUrl: text('linkedin_url'),
   bio: text('bio'),
+  ens: text('ens'), // ENS domain name
+  skills: text('skills'), // JSON array of skills: ["typescript", "react", "solidity"]
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

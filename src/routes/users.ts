@@ -16,13 +16,59 @@ usersRoute.get('/me', async (c) => {
   const auth = c.get('auth');
   const address = auth.address;
 
-  const user = await db.query.users.findFirst({
+  const userRecord = await db.query.users.findFirst({
     where: eq(users.address, address),
   });
 
-  if (!user) {
+  if (!userRecord) {
     return c.json({ error: 'User not found' }, 404);
   }
+
+  // Parse skills from JSON if available
+  let skills: string[] = [];
+  if (userRecord.skills) {
+    try {
+      skills = JSON.parse(userRecord.skills);
+    } catch {
+      skills = [];
+    }
+  }
+
+  // Format memberSince from createdAt
+  const memberSince = userRecord.createdAt
+    ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long' }).format(userRecord.createdAt)
+    : 'Unknown';
+
+  // Get completed projects count (number of paid KPIs)
+  const [completedKpisResult] = await db
+    .select({ count: count() })
+    .from(kpis)
+    .innerJoin(assignments, eq(kpis.assignmentId, assignments.id))
+    .where(eq(assignments.freelancerAddress, address))
+    .where(eq(kpis.status, 'paid'));
+
+  // Get managed projects count
+  const [ownedProjectsResult] = await db
+    .select({ count: count() })
+    .from(projects)
+    .where(eq(projects.ownerAddress, address));
+
+  // Build user response matching frontend expectations
+  const user = {
+    address: userRecord.address,
+    ens: userRecord.ens || undefined,
+    email: userRecord.email || undefined,
+    githubUrl: userRecord.githubUrl || undefined,
+    linkedinUrl: userRecord.linkedinUrl || undefined,
+    bio: userRecord.bio || undefined,
+    skills: skills,
+    reviewCount: 0, // TODO: Implement review system
+    memberSince: memberSince,
+    completedProjects: completedKpisResult?.count || 0,
+    managedProjects: ownedProjectsResult?.count || 0,
+    createdAt: userRecord.createdAt.toISOString(),
+    updatedAt: userRecord.updatedAt.toISOString(),
+  };
 
   return c.json({ user });
 });
@@ -33,16 +79,29 @@ usersRoute.put('/me', zValidator('json', z.object({
   githubUrl: z.string().url().optional(),
   linkedinUrl: z.string().url().optional(),
   bio: z.string().max(500).optional(),
+  ens: z.string().optional(),
+  skills: z.array(z.string()).optional(),
 })), async (c) => {
   const auth = c.get('auth');
   const address = auth.address;
   const body = c.req.valid('json');
 
+  // Convert skills array to JSON string if provided
+  const updateData: any = {
+    email: body.email,
+    githubUrl: body.githubUrl,
+    linkedinUrl: body.linkedinUrl,
+    bio: body.bio,
+    ens: body.ens,
+    updatedAt: new Date(),
+  };
+
+  if (body.skills) {
+    updateData.skills = JSON.stringify(body.skills);
+  }
+
   const updated = await db.update(users)
-    .set({
-      ...body,
-      updatedAt: new Date(),
-    })
+    .set(updateData)
     .where(eq(users.address, address))
     .returning();
 
@@ -53,20 +112,34 @@ usersRoute.put('/me', zValidator('json', z.object({
 usersRoute.get('/:address', async (c) => {
   const address = c.req.param('address');
 
-  const user = await db.query.users.findFirst({
+  const userRecord = await db.query.users.findFirst({
     where: eq(users.address, address),
-    columns: {
-      address: true,
-      bio: true,
-      githubUrl: true,
-      linkedinUrl: true,
-      createdAt: true,
-    },
   });
 
-  if (!user) {
+  if (!userRecord) {
     return c.json({ error: 'User not found' }, 404);
   }
+
+  // Parse skills from JSON if available
+  let skills: string[] = [];
+  if (userRecord.skills) {
+    try {
+      skills = JSON.parse(userRecord.skills);
+    } catch {
+      skills = [];
+    }
+  }
+
+  // Build user response
+  const user = {
+    address: userRecord.address,
+    ens: userRecord.ens || undefined,
+    bio: userRecord.bio || undefined,
+    githubUrl: userRecord.githubUrl || undefined,
+    linkedinUrl: userRecord.linkedinUrl || undefined,
+    skills: skills,
+    createdAt: userRecord.createdAt.toISOString(),
+  };
 
   // Get user's public stats
   const [ownedProjectsResult] = await db
