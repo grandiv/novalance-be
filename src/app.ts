@@ -2,7 +2,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { Hono } from 'hono';
 import { swaggerUI } from '@hono/swagger-ui';
-import type { Env } from './types';
+import type { Env } from './types.js';
 
 // Create Hono app instance with Env bindings
 const app = new Hono<{ Bindings: Env }>();

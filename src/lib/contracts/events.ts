@@ -1,4 +1,4 @@
-import { publicClient, subscribeToVaultEvents } from './vault';
+import { publicClient, subscribeToVaultEvents } from './vault.js';
 
 export interface VaultEventHandlers {
   onDeposited?: (data: { caller: string; amount: string; projectId: string }) => void;

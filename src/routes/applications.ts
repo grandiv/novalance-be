@@ -3,9 +3,9 @@ import { zValidator } from '@hono/zod-validator';
 import { db } from '../db/index.js';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
 import { eq, and, desc } from 'drizzle-orm';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.js';
 import { nanoid } from 'nanoid';
-import { submitApplicationSchema } from '../lib/validations/application';
+import { submitApplicationSchema } from '../lib/validations/application.js';
 
 const applicationsRoute = new Hono();
 

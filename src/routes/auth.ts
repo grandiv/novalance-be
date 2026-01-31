@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { generateNonce, createSignMessage, verifySignature } from '../lib/crypto';
-import { createToken } from '../lib/jwt';
+import { generateNonce, createSignMessage, verifySignature } from '../lib/crypto.js';
+import { createToken } from '../lib/jwt.js';
 
 const auth = new Hono();
 

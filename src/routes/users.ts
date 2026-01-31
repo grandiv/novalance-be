@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, projects, applications, assignments, kpis, projectRoles } from '../db/schema';
 import { eq, desc, count, inArray } from 'drizzle-orm';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.js';
 
 const usersRoute = new Hono();
 

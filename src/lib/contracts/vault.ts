@@ -1,5 +1,5 @@
 import { createPublicClient, http, parseAbi } from 'viem';
-import { BASE_CHAIN } from '../../config/contracts';
+import { BASE_CHAIN } from '../../config/contracts.js';
 
 // Vault ABI (to be provided by SC dev)
 export const VAULT_ABI = parseAbi([

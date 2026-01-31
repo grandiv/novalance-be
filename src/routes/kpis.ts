@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
 import { eq, and, inArray } from 'drizzle-orm';
-import { authMiddleware } from '../middleware/auth';
-import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema, confirmKpiSchema } from '../lib/validations/kpi';
+import { authMiddleware } from '../middleware/auth.js';
+import { submitKpiSchema, reviewKpiSchema, recordDepositSchema, recordPayoutSchema, confirmKpiSchema } from '../lib/validations/kpi.js';
 
 const kpisRoute = new Hono();
 

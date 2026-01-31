@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { authMiddleware } from '../middleware/auth';
-import { getVaultBalance, getKpiStatus, getProjectInfo } from '../lib/contracts/vault';
+import { authMiddleware } from '../middleware/auth.js';
+import { getVaultBalance, getKpiStatus, getProjectInfo } from '../lib/contracts/vault.js';
 
 const contractsRoute = new Hono();
 

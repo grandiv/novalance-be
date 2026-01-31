@@ -4,9 +4,9 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, projects, projectRoles, applications, assignments, kpis } from '../db/schema';
 import { eq, and, desc, like, or, inArray } from 'drizzle-orm';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.js';
 import { nanoid } from 'nanoid';
-import { createProjectSchema, updateProjectSchema, createRoleSchema, updateRoleSchema, createKpiSchema, linkVaultSchema } from '../lib/validations/project';
+import { createProjectSchema, updateProjectSchema, createRoleSchema, updateRoleSchema, createKpiSchema, linkVaultSchema } from '../lib/validations/project.js';
 
 const projectsRoute = new Hono();
 
