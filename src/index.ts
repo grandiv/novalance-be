@@ -1,16 +1,26 @@
+import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import app from './app.js';
+import { getLocalDb } from './db';
+import app from './app';
 
-// Get port from environment or use default
-const port = parseInt(process.env.PORT || '3000', 10);
+const db = getLocalDb();
 
-// Start the server
-console.log(`🚀 Starting Novalance API server...`);
-
-serve({
-  fetch: app.fetch,
-  port,
+// Bind database to context
+app.use('/*', async (c, next) => {
+  (c as any).set('db', db);
+  await next();
 });
 
-console.log(`✅ Novalance API v1.0 is running on http://localhost:${port}`);
-console.log(`📖 Health check: http://localhost:${port}/`);
+const port = parseInt(process.env.PORT || '3000', 10);
+
+// For Vercel deployment
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  serve({
+    fetch: app.fetch,
+    port,
+  });
+  console.log(`🚀 Novalance API running on http://localhost:${port}`);
+}

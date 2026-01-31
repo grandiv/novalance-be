@@ -5,7 +5,8 @@
       "Bash(npm run db:generate:*)",
       "Bash(dir:*)",
       "Bash(npm run build:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:hono.dev)"
     ]
   }
 }
